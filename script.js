@@ -17,6 +17,14 @@ function gameboard() {
     };
     // this method will handel
     const dropToken = (index, player) => {
+        const row = Math.floor((index - 1) / 3);
+        const collumn = index % 3;
+        if (board[row][collumn].getValue() === 0) {
+            board[row][collumn].addToken(player);
+            return true;
+        } else {
+            return false;
+        }
         // implement drop token function
     };
 
@@ -68,13 +76,36 @@ function GameController() {
     const switchPlayer = () => {
         ActivePlayer = ActivePlayer === player[0] ? player[1] : player[0];
     };
-    const playRound = () => {
-        switchPlayer();
-        printNewRound();
-        checkifWinner();
-    };
+
     const checkifWinner = () => {};
+
+    const playRound = (gridspot) => {
+        if (board.dropToken(gridspot, getActivePlayer().token)) {
+            switchPlayer();
+            printNewRound();
+            checkifWinner();
+        } else {
+            handleUserInput();
+        }
+    };
     printNewRound();
+
+    const handleUserInput = () => {
+        const input = prompt("Please choose a grid spot from 1-9: ");
+        const number = parseInt(input);
+        console.log(number);
+        if (number > 0 && number < 9 && !isNaN(number)) {
+            playRound(number);
+        } else {
+            handleUserInput();
+        }
+    };
+    let counter = 1;
+    // loop to run game
+    while (counter < 9) {
+        handleUserInput();
+        counter++;
+    }
 
     return { getActivePlayer, playRound };
 }
