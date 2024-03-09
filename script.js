@@ -22,9 +22,6 @@ function gameboard() {
     return { getboard, dropToken };
 }
 
-// i need to create way that will allow me to alter the values of cell
-// that also checks if there currently is a value within cell
-
 function Cell() {
     let value = 0;
 
@@ -62,45 +59,59 @@ function GameController() {
     const switchPlayer = () => {
         ActivePlayer = ActivePlayer === player[0] ? player[1] : player[0];
     };
-
-    const checkifWinner = () => {
+    // starts here
+    function checkifWinner() {
         let gameboard = board.getboard();
         let matrixlength = gameboard.length - 1;
+        let winnerstatus = { found: false, symbol: null };
         // rows
-        function helperWinner(array) {
-            if (array.every((element) => element.getValue() === "X")) {
-                return true;
+        const checkArray = (array) => {
+            const firstsymbol = array[0].getValue();
+            if (
+                firstsymbol !== null &&
+                array.every((cell) => cell.getValue() === firstsymbol)
+            ) {
+                winnerstatus.found = true;
+                winnerstatus.symbol = firstsymbol;
             }
-        }
-        // Handle Rows
+        };
         gameboard.forEach((array) => {
-            helperWinner(array);
+            checkArray(array);
         });
-
         // Handle Collumns
         for (let i = 0; i < 3; i++) {
-            let collumn = gameboard.map((element) => {
-                return element[i];
-            });
-            helperWinner(collumn) ? true : false;
+            const row = gameboard[i];
+            const collumn = gameboard.map((element) => element[i]);
+            checkArray(row);
+            checkArray(collumn);
         }
         // Handle Diagonals
         let diagonalone = gameboard.map((array, index) => {
             return array[index];
         });
-        helperWinner(diagonalone) ? true : false;
+        checkArray(diagonalone);
 
         let diagonaltwo = gameboard.map((array) => {
             return array[matrixlength--];
         });
-        helperWinner(diagonaltwo) ? true : false;
-    };
+        checkArray(diagonaltwo);
 
+        //
+        return {
+            winnerFound: () => winnerstatus.found,
+            winnerSymbol: () => winnerstatus.symbol,
+        };
+    }
+    //
     const playRound = (row, collumn) => {
         board.dropToken(row, collumn, getActivePlayer().token);
+
+        const winnerCheck = checkifWinner();
+
+        if (winnerCheck.winnerFound()) {
+            console.log("Winner is " + winnerCheck.winnerSymbol());
+        }
         switchPlayer();
-        // if checkwinner call the overlay theme
-        checkifWinner() ? console.log("winner for x") : console.log("no win");
     };
     return { getActivePlayer, playRound, getboard: board.getboard };
 }
